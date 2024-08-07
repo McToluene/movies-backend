@@ -7,12 +7,12 @@ import { HashHelper } from './helper/hash.helper';
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UserService,
+    private userService: UserService,
     private jwtService: JwtService,
   ) {}
 
   async validateUser(username: string, password: string): Promise<User> {
-    const user = await this.usersService.findOneByEmail(username);
+    const user = await this.userService.findOneByEmail(username);
     if (!user || !(await HashHelper.compare(password, user.password)))
       throw new UnauthorizedException();
     return user;
