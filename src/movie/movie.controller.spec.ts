@@ -6,7 +6,6 @@ import { MovieDto } from './dto/movie.dto';
 import { MovieQueryDto } from './dto/movie-query.dto';
 import { Movie } from './schema/movie.schema';
 import { ConflictException, BadRequestException } from '@nestjs/common';
-import { Express } from 'express';
 
 describe('MovieController', () => {
   let controller: MovieController;
