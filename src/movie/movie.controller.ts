@@ -16,7 +16,7 @@ import { MovieService } from './movie.service';
 import { JwtAuthGuard } from '../shared/guard/jwt-auth.guard';
 import { MovieQueryDto } from './dto/movie-query.dto';
 import { Movie } from './schema/movie.schema';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @ApiTags('movie')
@@ -27,6 +27,12 @@ export class MovieController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   @Post()
+  @ApiResponse({
+    status: 201,
+    description: 'The movie has been successfully created.',
+  })
+  @ApiResponse({ status: 401, description: 'No token was provided.' })
+  @ApiResponse({ status: 400, description: 'Required fields are not provided' })
   async addMovie(
     @Request() req,
     @UploadedFile() file: Express.Multer.File,
@@ -38,6 +44,11 @@ export class MovieController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
+  @ApiResponse({
+    status: 200,
+    description: 'The movies has been fetched succesfully.',
+  })
+  @ApiResponse({ status: 401, description: 'No token was provided.' })
   async getMovies(
     @Query() query: MovieQueryDto,
   ): Promise<{ data: Movie[]; total: number }> {
