@@ -16,7 +16,10 @@ import { MovieService } from './movie.service';
 import { JwtAuthGuard } from '../shared/guard/jwt-auth.guard';
 import { MovieQueryDto } from './dto/movie-query.dto';
 import { Movie } from './schema/movie.schema';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@ApiTags('movie')
 @Controller('movie')
 export class MovieController {
   constructor(private movieService: MovieService) {}
