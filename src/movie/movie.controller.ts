@@ -7,6 +7,8 @@ import {
   Request,
   Get,
   Query,
+  Post,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MovieDto } from './dto/movie.dto';
@@ -21,17 +23,19 @@ export class MovieController {
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
+  @Post()
   async addMovie(
     @Request() req,
-    @UploadedFile() file,
+    @UploadedFile() file: Express.Multer.File,
     @Body() data: MovieDto,
   ): Promise<Movie> {
+    if (!file) throw new BadRequestException('Please add file');
     return this.movieService.addMovie(req.user, file, data);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getCareAides(
+  async getMovies(
     @Query() query: MovieQueryDto,
   ): Promise<{ data: Movie[]; total: number }> {
     return this.movieService.getMovies(query);

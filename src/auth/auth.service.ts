@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../user/schema/user.schema';
 import { UserService } from '../user/user.service';
@@ -21,7 +25,19 @@ export class AuthService {
   async login(user: User) {
     const payload = { email: user.email, sub: user._id };
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
     };
+  }
+
+  async register(email: string, password: string) {
+    let user = await this.userService.findOneByEmail(email);
+    if (user) throw new ConflictException('Email already registered!');
+    const createdUser = {
+      email,
+      password: await HashHelper.hash(password),
+    };
+
+    user = await this.userService.create(createdUser);
+    return this.login(user);
   }
 }

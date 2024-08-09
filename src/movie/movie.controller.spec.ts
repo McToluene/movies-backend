@@ -5,7 +5,8 @@ import { JwtAuthGuard } from '../shared/guard/jwt-auth.guard';
 import { MovieDto } from './dto/movie.dto';
 import { MovieQueryDto } from './dto/movie-query.dto';
 import { Movie } from './schema/movie.schema';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, BadRequestException } from '@nestjs/common';
+import { Express } from 'express';
 
 describe('MovieController', () => {
   let controller: MovieController;
@@ -36,7 +37,7 @@ describe('MovieController', () => {
   describe('addMovie', () => {
     it('should call MovieService.addMovie and return the result', async () => {
       const mockRequest = { user: { _id: '123', email: 'test@test.com' } };
-      const mockFile = new File([''], 'filename');
+      const mockFile = { buffer: Buffer.from('test') } as Express.Multer.File;
       const mockMovieDto: MovieDto = { title: 'Test Movie', year: '2020' };
       const mockMovie: Movie = {
         title: 'Test Movie',
@@ -60,13 +61,22 @@ describe('MovieController', () => {
       expect(result).toEqual(mockMovie);
     });
 
-    it('should throw an error when MovieService.addMovie fails', async () => {
+    it('should throw BadRequestException if no file is provided', async () => {
       const mockRequest = { user: { _id: '123', email: 'test@test.com' } };
-      const mockFile = new File([''], 'filename');
+      const mockMovieDto: MovieDto = { title: 'Test Movie', year: '2020' };
+
+      await expect(
+        controller.addMovie(mockRequest, undefined, mockMovieDto),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw ConflictException when MovieService.addMovie fails', async () => {
+      const mockRequest = { user: { _id: '123', email: 'test@test.com' } };
+      const mockFile = { buffer: Buffer.from('test') } as Express.Multer.File;
       const mockMovieDto: MovieDto = { title: 'Test Movie', year: '2020' };
 
       mockMovieService.addMovie.mockRejectedValueOnce(
-        new ConflictException('Movie: Test Movie already exist'),
+        new ConflictException('Movie: Test Movie already exists'),
       );
 
       await expect(
@@ -82,7 +92,7 @@ describe('MovieController', () => {
 
       mockMovieService.getMovies.mockResolvedValueOnce(mockMovies);
 
-      const result = await controller.getCareAides(mockQuery);
+      const result = await controller.getMovies(mockQuery);
 
       expect(service.getMovies).toHaveBeenCalledWith(mockQuery);
       expect(result).toEqual(mockMovies);
@@ -94,7 +104,7 @@ describe('MovieController', () => {
 
       mockMovieService.getMovies.mockResolvedValueOnce(mockMovies);
 
-      const result = await controller.getCareAides(mockQuery);
+      const result = await controller.getMovies(mockQuery);
 
       expect(service.getMovies).toHaveBeenCalledWith(mockQuery);
       expect(result).toEqual(mockMovies);
@@ -107,7 +117,7 @@ describe('MovieController', () => {
         new Error('Service error'),
       );
 
-      await expect(controller.getCareAides(mockQuery)).rejects.toThrow(Error);
+      await expect(controller.getMovies(mockQuery)).rejects.toThrow(Error);
     });
   });
 });

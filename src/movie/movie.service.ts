@@ -18,15 +18,18 @@ export class MovieService {
     private mediaService: MediaService,
   ) {}
 
-  async addMovie(user: User, file: File, data: MovieDto): Promise<Movie> {
+  async addMovie(
+    user: User,
+    file: Express.Multer.File,
+    data: MovieDto,
+  ): Promise<Movie> {
     const movie = await this.getMovieByTitle(data.title, user);
     if (movie)
       throw new ConflictException(`Movie: ${data.title} already exist`);
 
-    const arrayBuffer = await file.arrayBuffer();
     const response = await this.mediaService.upload(
       MediaProviderEnum.CLOUDINARY,
-      Buffer.from(arrayBuffer),
+      file.buffer,
       ImageType.MOVIE,
     );
 
