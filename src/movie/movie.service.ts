@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MediaService } from '../media/media.service';
@@ -40,6 +44,33 @@ export class MovieService {
     };
 
     return this.movieModel.create(createdMovie);
+  }
+
+  async editMovie(
+    user: User,
+    file: Express.Multer.File,
+    data: MovieDto,
+  ): Promise<Movie> {
+    const movie = await this.getMovieByTitle(data.title, user);
+    if (!movie) throw new NotFoundException(`Movie: ${data.title} not found`);
+
+    const response = await this.mediaService.upload(
+      MediaProviderEnum.CLOUDINARY,
+      file.buffer,
+      ImageType.MOVIE,
+    );
+
+    movie.url = response?.url;
+    movie.title = data.title;
+    movie.year = data.year;
+    const updatedMovie = await this.movieModel.findOneAndUpdate(
+      { _id: movie._id },
+      movie,
+      { new: true },
+    );
+
+    if (!updatedMovie) throw new NotFoundException(`Failed to update movie`);
+    return updatedMovie;
   }
 
   private async getMovieByTitle(title: string, user: User) {

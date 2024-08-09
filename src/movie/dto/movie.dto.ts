@@ -3,10 +3,16 @@ import { IsString } from 'class-validator';
 
 export class MovieDto {
   @IsString()
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Title of the movie',
+    example: 'Inception',
+  })
   title: string;
 
   @IsString()
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Year the movie was released',
+    example: '2010',
+  })
   year: string;
 }
