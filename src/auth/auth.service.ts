@@ -15,11 +15,11 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<User> {
+  async validateUser(username: string, password: string) {
     const user = await this.userService.findOneByEmail(username);
     if (!user || !(await HashHelper.compare(password, user.password)))
       throw new UnauthorizedException();
-    return user;
+    return this.login(user);
   }
 
   async login(user: User) {
